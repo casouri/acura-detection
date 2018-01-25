@@ -2,7 +2,7 @@
 
 This is a test GUI for testing your functions.
 
-[example](./example.gif)
+![example](./example.gif)
 
 # Install
 
