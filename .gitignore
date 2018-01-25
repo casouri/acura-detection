@@ -1,0 +1,8 @@
+# my stuffs
+etc/
+*/.venv
+*/Pipfile
+*/Pipfile.lock
+*/.ropeproject/
+*/.mypy_cache/
+*/__py_cache__/
