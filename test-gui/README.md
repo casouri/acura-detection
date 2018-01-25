@@ -34,8 +34,7 @@ In order to include your function into GUI:
     ```python
     def threshold(image_boxes, threshold=177, max_value=255):
         image = cv2.cvtColor(image_boxes[1].image, cv2.COLOR_RGB2GRAY)
-        ret, threshold_result = cv2.threshold(image, threshold, max_value,
-cv2.THRESH_BINARY)
+        ret, threshold_result = cv2.threshold(image, threshold, max_value, cv2.THRESH_BINARY)
         image_boxes[2].image = cv2.cvtColor(threshold_result, cv2.COLOR_GRAY2RGB)
         return 'threshold done'
     ```
