@@ -20,7 +20,7 @@ In order to include your function into GUI:
 1. put your function into ```model.py```
    Your function has to be in this format:
    1. the first argument is a image_boxes (list),
-   it contains four image_box objects.
+   it contains four image_box objects, each corresponding to a image in program.
    You can get images by ```image_box.image```
    For example, I get the second image by ```iamge_boxes[1].image```
    2. save your images to the desired one. 
