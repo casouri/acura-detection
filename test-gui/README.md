@@ -14,7 +14,7 @@ To run the program, simply execute ```main-controller.py```
 
 # Configure
 
-I have several test functions predefined as examples. 
+I have several predefined test functions as examples. 
 In order to include your function into GUI:
 
 1. put your function into ```model.py```
@@ -57,7 +57,7 @@ In order to include your function into GUI:
    and the two lists are arguments that will be passed 
    into function you just provided in ```model.py``` after image_boxes
    So when the first variant of canny is called, it looks like
-   ```canny(iamge_boxes, 200, 250)```
+   ```canny(image_boxes, 200, 250)```
 
    ```json
        "functions": {
