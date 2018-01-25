@@ -10,21 +10,21 @@ You need to install pyqt5 and opencv-python
 
 # Run
 
-To run the program, simply execute `main-controller.py`
+To run the program, simply execute ```main-controller.py```
 
 # Configure
 
 I have several test functions predefined as examples. 
 In order to include your function into GUI:
 
-1. put your function into `model.py`
+1. put your function into ```model.py```
    Your function has to be in this format:
    1. the first argument is a image_boxes (list),
    it contains four image_box objects.
-   You can get images by `image_box.image`
-   For example, I get the second image by `iamge_boxes[1].image`
+   You can get images by ```image_box.image```
+   For example, I get the second image by ```iamge_boxes[1].image```
    2. save your images to the desired on. 
-   In this example I saved the output to `image_boxes[2].image`
+   In this example I saved the output to ```image_boxes[2].image```
    3. You have to return a string indicating the status of the function.
    It can be anything: "failed", "done", "wrong image", etc
    4. images in image_box have to be RGB images.
@@ -39,24 +39,27 @@ cv2.THRESH_BINARY)
         image_boxes[2].image = cv2.cvtColor(threshold_result, cv2.COLOR_GRAY2RGB)
         return 'threshold done'
     ```
-2. Once you have the function in `model.py`,
-   go to `main-controller.py` and find a variable called `avaliable_functions`.
+
+2. Once you have the function in ```model.py```,
+   go to ```main-controller.py``` and find a variable called ```avaliable_functions```.
    In this dict the key is the name you want to use for your function,
-   and the value is the actually function is `model.py`.
+   and the value is the actually function is ```model.py```.
+
    ```python
        avaliable_functions = {
         "threshold": model.threshold,
         "canny": model.canny,
     }
     ```
-3. For the other arguments that goes after image_boxes, put them into `config.json`
-   In `config.json`, there is a dict called `functions`,
+3. For the other arguments that goes after image_boxes, put them into ```config.json```
+   In `config.json`, there is a dict called ```functions```,
    that's where all the configureations go.
    In this example "canny" is the name of the function,
    and the two lists are arguments that will be passed 
-   into function you just provided in `model.py` after image_boxes
+   into function you just provided in ```model.py``` after image_boxes
    So when the first variant of canny is called, it looks like
-   `canny(iamge_boxes, 200, 250)`
+   ```canny(iamge_boxes, 200, 250)```
+
    ```json
        "functions": {
         "canny":
