@@ -4,15 +4,15 @@
     "default-image": "./default-image.png",
     "icon-path": "/Users/yuan/p/Yuan-Fu/gui/icon",
     "functions": {
-        "threshold":
-        [
-            [177, 225],
-            [177, 225]
-        ],
         "canny":
         [
             [200, 250],
             [200, 300]
+        ],
+        "threshold":
+        [
+            [177, 225],
+            [177, 225]
         ]
     }
 }

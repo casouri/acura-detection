@@ -8,16 +8,19 @@ import cv2
 
 
 def threshold(image_boxes, threshold=177, max_value=255):
-    image = cv2.cvtColor(image_boxes[0].image, cv2.CV_RGB2GRAY)
-    image_boxes[1].image = cv2.threshold(image, threshold, max_value,
-                                         cv2.THRESH_BINARY)
+    print('thresholding')
+    image = cv2.cvtColor(image_boxes[1].image, cv2.COLOR_RGB2GRAY)
+    ret, threshold_result = cv2.threshold(image, threshold, max_value,
+                                          cv2.THRESH_BINARY)
+    image_boxes[2].image = cv2.cvtColor(threshold_result, cv2.COLOR_GRAY2RGB)
     return 'threshold done'
 
 
 def canny(image_boxes, min_num=200, max_num=250):
-    image = cv2.cvtColor(image_boxes[0].image, cv2.COLOR_RGB2GRAY)
+    print('cannying')
+    image = cv2.cvtColor(image_boxes[1].image, cv2.COLOR_RGB2GRAY)
     edge = cv2.Canny(image, min_num, max_num)
-    image_boxes[1].image = cv2.cvtColor(edge, cv2.COLOR_GRAY2RGB)
+    image_boxes[2].image = cv2.cvtColor(edge, cv2.COLOR_GRAY2RGB)
     return 'canny done'
 
 

@@ -5,4 +5,4 @@ etc/
 */Pipfile.lock
 */.ropeproject/
 */.mypy_cache/
-*/__py_cache__/
+*/__pycache__/

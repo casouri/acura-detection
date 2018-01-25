@@ -150,7 +150,10 @@ class MainWidget(QWidget):
 
 
 class MainWindow(QMainWindow):
-    avaliable_functions = {"threshold": model.threshold, "canny": model.canny}
+    avaliable_functions = {
+        "threshold": model.threshold,
+        "canny": model.canny,
+    }
     avaliable_applications = {
         "face-recognition": model.face_recognition,
         "human-detection": model.human_detection,
@@ -212,9 +215,19 @@ class MainWindow(QMainWindow):
             for args in self.all_function_args[function_name]:
                 variant_action = QAction("{}{}".format(function_name, count),
                                          self)
-                variant_action.triggered.connect(
-                    lambda img: self.main_widget.log_text_change_image(
-                        current_function(self.main_widget.image_boxes, *args)))
+
+                # can't use lambda because for loop rebind variables
+                def make_function(args=args,
+                                  current_function=current_function):
+                    def inner_function():
+                        return self.main_widget.log_text_change_image(
+                            current_function(self.main_widget.image_boxes,
+                                             *args))
+
+                    return inner_function
+
+                variant_action.triggered.connect(make_function())
+
                 function_menu.addAction(variant_action)
                 count += 1
 
