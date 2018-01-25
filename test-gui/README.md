@@ -23,7 +23,7 @@ In order to include your function into GUI:
    it contains four image_box objects.
    You can get images by ```image_box.image```
    For example, I get the second image by ```iamge_boxes[1].image```
-   2. save your images to the desired on. 
+   2. save your images to the desired one. 
    In this example I saved the output to ```image_boxes[2].image```
    3. You have to return a string indicating the status of the function.
    It can be anything: "failed", "done", "wrong image", etc
@@ -40,8 +40,8 @@ In order to include your function into GUI:
     ```
 
 2. Once you have the function in ```model.py```,
-   go to ```main-controller.py``` and find a variable called ```avaliable_functions```.
-   In this dict the key is the name you want to use for your function,
+   1. go to ```main-controller.py``` and find a variable called ```avaliable_functions```.
+   2. In this dict the key is the name you want to use for your function,
    and the value is the actually function is ```model.py```.
 
    ```python
