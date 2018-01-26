@@ -2,7 +2,7 @@
 
 This is a test GUI for testing your functions.
 
-![example](./example.gif)
+[[./example.gif]]
 
 * Install
 
@@ -31,13 +31,13 @@ In order to include your function into GUI:
    In this example I first converted RGB image to gray scale image,
    process it, then convert it back to RGB image and saved to image_box.
    
-#+BEGIN_SRC python
-def threshold(image_boxes, threshold=177, max_value=255):
-    image = cv2.cvtColor(image_boxes[1].image, cv2.COLOR_RGB2GRAY)
-    ret, threshold_result = cv2.threshold(image, threshold, max_value, cv2.THRESH_BINARY)
-    image_boxes[2].image = cv2.cvtColor(threshold_result, cv2.COLOR_GRAY2RGB)
-    return 'threshold done'
-#+END_SRC
+    #+BEGIN_SRC python
+    def threshold(image_boxes, threshold=177, max_value=255):
+        image = cv2.cvtColor(image_boxes[1].image, cv2.COLOR_RGB2GRAY)
+        ret, threshold_result = cv2.threshold(image, threshold, max_value, cv2.THRESH_BINARY)
+        image_boxes[2].image = cv2.cvtColor(threshold_result, cv2.COLOR_GRAY2RGB)
+        return 'threshold done'
+    #+END_SRC
 
 
 2. Once you have the function in =model.py=,
@@ -45,12 +45,12 @@ def threshold(image_boxes, threshold=177, max_value=255):
    2. In this dict the key is the name you want to use for your function,
    and the value is the actually function is =model.py=.
   
-#+BEGIN_SRC python
-       avaliable_functions = {
-        "threshold": model.threshold,
-        "canny": model.canny,
-    }
-#+END_SRC
+   #+BEGIN_SRC python
+     avaliable_functions = {
+         "threshold": model.threshold,
+         "canny": model.canny,
+     }
+   #+END_SRC
 
 1. For the other arguments that goes after image_boxes, put them into =config.json=
    In `config.json`, there is a dict called =functions=,
@@ -61,18 +61,18 @@ def threshold(image_boxes, threshold=177, max_value=255):
    So when the first variant of canny is called, it looks like
    =canny(image_boxes, 200, 250)=
 
-  #+BEGIN_SRC json
-"functions": {
-    "canny":
-    [
-        [200, 250],
-        [200, 300]
-    ],
-    "threshold":
-    [
-        [177, 225],
-        [177, 225]
-    ]
-}
-  #+END_SRC 
+   #+BEGIN_SRC json
+     "functions": {
+         "canny":
+         [
+             [200, 250],
+             [200, 300]
+         ],
+         "threshold":
+         [
+             [177, 225],
+             [177, 225]
+         ]
+     }
+   #+END_SRC 
 
