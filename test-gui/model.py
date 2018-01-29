@@ -1,3 +1,6 @@
+"""
+Contributer: Yuan Fu
+"""
 import cv2
 
 # functions have to take 1st argument as a list of four image boxes
