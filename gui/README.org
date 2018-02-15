@@ -7,7 +7,7 @@ python3 model.py
 to process video.
 
 In =model.py= there is a iterator =VideoProcessor=. 
-I each iteration it processes a frame from video.
+In each iteration it processes a frame from video.
 
 Processing function is from =background.py= (currently only background subtraction)
 Function =subtract= is the algorithm.
