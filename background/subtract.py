@@ -1,11 +1,10 @@
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-import cv2
-
-IMG_PATH = 'fr.png'
+IMG_PATH = 'image2.png'
 img = cv2.imread(IMG_PATH, 1)
-bg = cv2.imread("bg2.png", 1)
+bg = cv2.imread("bg.png", 1)
 
 threshold = 73
 maxValue = 225
