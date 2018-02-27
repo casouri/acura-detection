@@ -1,17 +1,13 @@
-"""
-Contributer: Yuan Fu
-"""
-
 import json
 import sys
 
+import cv2
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (QAction, QApplication, QFileDialog, QHBoxLayout,
                              QLabel, QMainWindow, QMenu, QPushButton,
                              QTextEdit, QToolButton, QVBoxLayout, QWidget)
 
-import cv2
 import model
 
 
