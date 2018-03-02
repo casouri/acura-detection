@@ -4,10 +4,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-IMG_PATH = 'image4.png'
-img = cv2.imread(IMG_PATH, 1)
-bg = cv2.imread("bg.png", 1)
-
 
 class Plotter:
     def __init__(self, row, colomn):
@@ -118,7 +114,7 @@ def sub1():
     plt.show()
 
 
-def sub_lab(img, bg):
+def sub_lab(img, bg, export_path=""):
     original = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
@@ -258,7 +254,9 @@ def sub_lab(img, bg):
 
     # show_result()
 
-    cv2.imwrite("after_sub.png", final)
+    if export_path:
+        cv2.imwrite(export_path, final)
+
     return final
 
 
@@ -363,15 +361,53 @@ top left and down right of each body.
     for index in range(0, width):
         length = nonzero_height_in_line_list[index]
 
-        length_before = nonzero_height_in_line_list[minus_within(index, 1, 0)]
+        # length_before = nonzero_height_in_line_list[minus_within(index, 1, 0)]
+        # length_5_before = nonzero_height_in_line_list[minus_within(
+        #     index, 5, 0)]
+        # length_5_after = nonzero_height_in_line_list[plus_within(index, 5, 0)]
+        curve_around = [
+            nonzero_height_in_line_list[idx]
+            for idx in range(
+                minus_within(index, 10, 0), plus_within(index, 10, width))
+        ]
+
+        # fix the cure to a second degree polynomio
+        poly = np.poly1d(np.polyfit(range(len(curve_around)), curve_around, 2))
+        deriv = poly.deriv()
+        # direction > 0 means height increasing, opposite means decreasing
+        direction = deriv(len(curve_around) / 2)
 
         if length < max_height:
-            if length_before <= min_height and length >= min_height:
+            if length_before <= min_height and length >= min_height and direction > 0:
                 # increasing height
                 list_of_left_side_of_body.append(index)
-            elif length_before >= min_height and length <= min_height:
+            elif length_before >= min_height and length <= min_height and direction < 0:
                 # decreasing height
                 list_of_right_side_of_body.append(index)
+
+        # remove positions that are too close to each other
+        # between two left postion or two right position,
+        # there should be at least 50 pixels
+        tmp_list = copy.copy(list_of_left_side_of_body)
+        list_of_left_side_of_body = []
+        for index in range(0, len(tmp_list)):
+            if not (index >= 1 and
+                    (tmp_list[index] - tmp_list[index - 1]) < 50):
+                list_of_left_side_of_body.append(tmp_list[index])
+
+        tmp_list = copy.copy(list_of_right_side_of_body)
+        list_of_right_side_of_body = []
+        for index in range(0, len(tmp_list)):
+            if not (index >= 1 and
+                    (tmp_list[index] - tmp_list[index - 1]) < 50):
+                list_of_right_side_of_body.append(tmp_list[index])
+
+    # make the range wider between left and right
+    # so more body can be coverd
+    # be aware that this block should be out side the for loop above!
+    PADDING = 5
+    list_of_left_side_of_body = np.subtract(list_of_left_side_of_body, PADDING)
+    list_of_right_side_of_body = np.add(list_of_right_side_of_body, PADDING)
 
     #
     # 3: pack each two lines into a tuple that represent a body
@@ -379,7 +415,7 @@ top left and down right of each body.
 
     # body_sides is a list of tuples of left and right position of each body
     if len(list_of_left_side_of_body) < len(list_of_right_side_of_body):
-        body_sides = zip([0] + [list_of_left_side_of_body],
+        body_sides = zip([0] + list_of_left_side_of_body,
                          list_of_right_side_of_body)
     elif len(list_of_left_side_of_body) > len(list_of_right_side_of_body):
         body_sides = zip(list_of_left_side_of_body,
@@ -440,26 +476,39 @@ def detect_human(after_sub):
     for pt1, pt2 in body_coordinate_list:
         cv2.rectangle(copy_img, pt1, pt2, (0, 255, 0), 2)
 
-    # # the number of nonzero pixels in each line
-    # pos = 0
-    # segment_position = []
-    # for vertical_line in nonzero_height_in_line_list:
-    #     pos += 1
-    #     if vertical_line > 30:
-    #         segment_position.append(pos)
+    # separate head, body and leg
+    all_component_list = []
+    for ((xmin, ymin), (xmax, ymax)) in body_coordinate_list:
+        head_xmin, head_ymin = xmin, ymin
+        head_xmax, head_ymax = xmax, round((ymax - ymin) / 6) + ymin
 
-    plotter = Plotter(2, 2)
-    plotter.show_img(1, after_sub, "After background subtraction")
-    plotter.show_img(2, mask, "Mask")
-    plotter.show_img(3, body_list[5], "Mask")
-    # plotter.show_img(3, copy_img, "Result")
-    # width = len(nonzero_height_in_line_list)
-    # plotter.show_multi_plot(
-    #     3, (list(range(0, width)), nonzero_height_in_line_list,
-    #         list(range(0, width)), [30] * width, ), "Scan left to right")
-    plt.show()
+        body_xmin, body_ymin = xmin, head_ymax
+        body_xmax, body_ymax = xmax, round((ymax - ymin) / 2) + ymin
+
+        leg_xmin, leg_ymin = xmin, body_ymax
+        leg_xmax, leg_ymax = xmax, ymax
+
+        component_list = [((head_xmin, head_ymin), (head_xmax, head_ymax)),
+                          ((body_xmin, body_ymin), (body_xmax, body_ymax)),
+                          ((leg_xmin, leg_ymin), (leg_xmax, leg_ymax))]
+
+        for pt1, pt2 in component_list:
+            cv2.rectangle(copy_img, pt1, pt2, (255, 0, 0), 1)
+
+        all_component_list.append(component_list)
+
+    return copy_img
 
 
 if __name__ == "__main__":
+
+    IMG_PATH = 'image4.png'
+    img = cv2.imread(IMG_PATH, 1)
+    bg = cv2.imread("bg.png", 1)
+
     # detect_human((sub_lab(img, bg)))
-    sub_lab(img, bg)
+    # sub_lab(img, bg, True)
+
+    for num in range(1, 5):
+        img = cv2.imread("image%d.png" % num, 1)
+        sub_lab(img, bg, "after_sub_%d.png" % num)
