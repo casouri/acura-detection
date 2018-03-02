@@ -5,6 +5,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def minus_within(num1, num2, min_):
+    result = num1 - num2
+    if result >= min_:
+        return result
+    else:
+        return min_
+
+
+def plus_within(num1, num2, max_):
+    result = num1 + num2
+    if result <= max_:
+        return result
+    else:
+        return max_
+
+
 class Backend():
     def __init__(self, bg, bg_alpha=0.0001):
         """Return a background subtractor.
@@ -195,30 +211,179 @@ class Backend():
         return final
         # return hull_final
 
+    def scan_left_right(self, img, human_height_threshold):
+        """Scan left to right to look for possible humans.
 
-    def find_human(self):
-        img = self.after_bg_sub
+    * Arguments:
+    * img (arraay): the image to scan through. Must be binary.
+    * human_height_threshold (tuple<int, int>): (min, max) Anything above the min and
+    under the max is considered human.
 
-        # contour
-        # only return the most out side contours
-        im2, contour, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL,
-                                                   cv2.CHAIN_APPROX_SIMPLE)
-        # original2 = copy.copy(original)
-        # h, w = mask.shape[:2]
-        # contour_mask = np.zeros((h, w), np.uint8)
-        # #                               all contour found
-        # #                                    v
-        # cv2.drawContours(contour_mask, contour, -1, (255), cv2.FILLED)
-        # #                                          ^         ^
-        # #                                        green   thickness
+    * Return:
+    * (list): [((xmin, ymin), (xmax, ymax))] a list of coordinates marking 
+    top left and down right of each body.
+    """
 
-        # #contour convex hull
-        # original4 = copy.copy(original)
-        # original5 = copy.copy(original)
-        # h, w = mask.shape[:2]
-        # hull_mask = np.zeros((h, w), np.uint8)
-        # for cnt in contour:
-        #     hull = cv2.convexHull(cnt)
-        #     cv2.drawContours(original4, [hull], -1, (0, 255, 0), 2)
-        #     cv2.drawContours(hull_mask, [hull], -1, (255), cv2.FILLED)
+        #
+        # 1: get each line's height
+        #
 
+        # vertical line
+        # amount of non zero pixels in each vertical_line
+        nonzero_height_in_line_list = np.count_nonzero(img, axis=0)
+
+        #
+        # 2: get positions of lines with enough height
+        #
+
+        list_of_left_side_of_body = []
+        list_of_right_side_of_body = []
+
+        min_height, max_height = human_height_threshold
+        width = len(nonzero_height_in_line_list)
+        for index in range(0, width):
+            length = nonzero_height_in_line_list[index]
+
+            length_before = nonzero_height_in_line_list[minus_within(
+                index, 1, 0)]
+            # length_5_before = nonzero_height_in_line_list[minus_within(
+            #     index, 5, 0)]
+            # length_5_after = nonzero_height_in_line_list[plus_within(index, 5, 0)]
+            curve_around = [
+                nonzero_height_in_line_list[idx]
+                for idx in range(
+                    minus_within(index, 10, 0), plus_within(index, 10, width))
+            ]
+
+            # fix the cure to a second degree polynomio
+            poly = np.poly1d(
+                np.polyfit(range(len(curve_around)), curve_around, 2))
+            deriv = poly.deriv()
+            # direction > 0 means height increasing, opposite means decreasing
+            direction = deriv(len(curve_around) / 2)
+
+            if length < max_height:
+                if length_before <= min_height and length >= min_height and direction > 0:
+                    # increasing height
+                    list_of_left_side_of_body.append(index)
+                elif length_before >= min_height and length <= min_height and direction < 0:
+                    # decreasing height
+                    list_of_right_side_of_body.append(index)
+
+            # remove positions that are too close to each other
+            # between two left postion or two right position,
+            # there should be at least 50 pixels
+            tmp_list = copy.copy(list_of_left_side_of_body)
+            list_of_left_side_of_body = []
+            for index in range(0, len(tmp_list)):
+                if not (index >= 1 and
+                        (tmp_list[index] - tmp_list[index - 1]) < 50):
+                    list_of_left_side_of_body.append(tmp_list[index])
+
+            tmp_list = copy.copy(list_of_right_side_of_body)
+            list_of_right_side_of_body = []
+            for index in range(0, len(tmp_list)):
+                if not (index >= 1 and
+                        (tmp_list[index] - tmp_list[index - 1]) < 50):
+                    list_of_right_side_of_body.append(tmp_list[index])
+
+        # make the range wider between left and right
+        # so more body can be coverd
+        # be aware that this block should be out side the for loop above!
+        PADDING = 5
+        list_of_left_side_of_body = np.subtract(list_of_left_side_of_body,
+                                                PADDING)
+        list_of_right_side_of_body = np.add(list_of_right_side_of_body,
+                                            PADDING)
+
+        # make sure padding does exceed frame width
+        for index in range(0, len(list_of_left_side_of_body)):
+            if list_of_left_side_of_body[index] < 0:
+                list_of_left_side_of_body[index] = 0
+        for index in range(0, len(list_of_right_side_of_body)):
+            if list_of_right_side_of_body[index] > width - 1:
+                list_of_right_side_of_body[index] = width - 1
+        #
+        # 3: pack each two lines into a tuple that represent a body
+        #
+
+        # body_sides is a list of tuples of left and right position of each body
+        print(list_of_left_side_of_body)
+        print(list_of_right_side_of_body)
+        if len(list_of_left_side_of_body) < len(list_of_right_side_of_body):
+            body_sides = zip([0, *list_of_left_side_of_body],
+                             list_of_right_side_of_body)
+        elif len(list_of_left_side_of_body) > len(list_of_right_side_of_body):
+            body_sides = zip(list_of_left_side_of_body,
+                             [*list_of_right_side_of_body, 319])
+        else:
+            body_sides = zip(list_of_left_side_of_body,
+                             list_of_right_side_of_body)
+
+        # so we can use it many times with out exhausting it (as iterator)
+        body_sides = list(body_sides)
+
+        #
+        # 4: find upper left and down right of each body
+        #
+
+        body_coordinate_list = []
+
+        print(body_sides)
+        for left, right in body_sides:
+            # guard against situations like [8,8]
+            if right - left < 3:
+                break
+            # for each body
+            xlist = []
+            ylist = []
+            # find all the coordinates of non zero pixels
+            for x in range(left, right):
+                # only colomns between left and right boundries
+                for y in range(0, img.shape[0]):
+                    if img[y, x] > 0:
+                        xlist.append(x)
+                        ylist.append(y)
+
+            xmin = min(xlist)
+            xmax = max(xlist)
+            ymin = min(ylist)
+            ymax = max(ylist)
+
+            body_coordinate_list.append(((xmin, ymin), (xmax, ymax)))
+
+        return body_coordinate_list
+
+    def detect_human(self, after_sub):
+        mask = cv2.threshold(after_sub, 1, 255, cv2.THRESH_BINARY)[1]
+        binary_mask = cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY)
+
+        # draw boxes around image
+        body_coordinate_list = self.scan_left_right(binary_mask, (100, 180))
+        copy_img = copy.copy(after_sub)
+        for pt1, pt2 in body_coordinate_list:
+            cv2.rectangle(copy_img, pt1, pt2, (0, 255, 0), 2)
+
+        # separate head, body and leg
+        all_component_list = []
+        for ((xmin, ymin), (xmax, ymax)) in body_coordinate_list:
+            head_xmin, head_ymin = xmin, ymin
+            head_xmax, head_ymax = xmax, round((ymax - ymin) / 6) + ymin
+
+            body_xmin, body_ymin = xmin, head_ymax
+            body_xmax, body_ymax = xmax, round((ymax - ymin) / 2) + ymin
+
+            leg_xmin, leg_ymin = xmin, body_ymax
+            leg_xmax, leg_ymax = xmax, ymax
+
+            component_list = [((head_xmin, head_ymin), (head_xmax, head_ymax)),
+                              ((body_xmin, body_ymin), (body_xmax, body_ymax)),
+                              ((leg_xmin, leg_ymin), (leg_xmax, leg_ymax))]
+
+            # draw components
+            for pt1, pt2 in component_list:
+                cv2.rectangle(copy_img, pt1, pt2, (255, 0, 0), 1)
+
+            all_component_list.append(component_list)
+
+        return copy_img

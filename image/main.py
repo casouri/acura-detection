@@ -26,12 +26,6 @@ class Plotter:
         plt.plot(*plot)
 
 
-def first_nonzero(lis):
-    for element in lis:
-        if element != 0:
-            return lis.index(element)
-
-
 def minus_within(num1, num2, min_):
     result = num1 - num2
     if result >= min_:
@@ -361,7 +355,7 @@ top left and down right of each body.
     for index in range(0, width):
         length = nonzero_height_in_line_list[index]
 
-        # length_before = nonzero_height_in_line_list[minus_within(index, 1, 0)]
+        length_before = nonzero_height_in_line_list[minus_within(index, 1, 0)]
         # length_5_before = nonzero_height_in_line_list[minus_within(
         #     index, 5, 0)]
         # length_5_after = nonzero_height_in_line_list[plus_within(index, 5, 0)]
@@ -492,6 +486,7 @@ def detect_human(after_sub):
                           ((body_xmin, body_ymin), (body_xmax, body_ymax)),
                           ((leg_xmin, leg_ymin), (leg_xmax, leg_ymax))]
 
+        # draw components
         for pt1, pt2 in component_list:
             cv2.rectangle(copy_img, pt1, pt2, (255, 0, 0), 1)
 

@@ -59,9 +59,10 @@ class VideoProcessor:
 
     def process_image(self, image, message_type):
         self.backend.read(image)
-        result = self.backend.sub_lab()
+        after_sub = self.backend.sub_lab()
+        after_detect = self.backend.detect_human(after_sub)
         if self.export:
-            self.writer.write(result)
+            self.writer.write(after_detect)
         # return "cool"
 
 
@@ -73,7 +74,7 @@ if __name__ == "__main__":
     #         pass
     #         # print(message)
 
-    processor = VideoProcessor("video-10.mp4", "raw", "output.mp4")
+    processor = VideoProcessor("video-2.mp4", "raw", "output.mp4")
     for message in processor:
         pass
         # print(message)
