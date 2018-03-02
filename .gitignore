@@ -9,3 +9,5 @@ etc/
 papers
 *.mp4
 *.png
+*.pyc
+*.zip
