@@ -197,8 +197,8 @@ class Backend():
         #
 
         # body_sides is a list of tuples of left and right position of each body
-        print(list_of_left_side_of_body)
-        print(list_of_right_side_of_body)
+        # print(list_of_left_side_of_body)
+        # print(list_of_right_side_of_body)
         if len(list_of_left_side_of_body) < len(list_of_right_side_of_body):
             body_sides = zip([0, *list_of_left_side_of_body],
                              list_of_right_side_of_body)
@@ -218,7 +218,7 @@ class Backend():
 
         body_coordinate_list = []
 
-        print(body_sides)
+        # print(body_sides)
         for left, right in body_sides:
             # guard against situations like [8,8]
             if right - left < 3:
@@ -314,6 +314,7 @@ class Backend():
 
             all_component_list.append(component_list)
 
+        # get color
         all_color_list = []
         for component in all_component_list:
             color_list = self.get_color(component_list, self.img)
