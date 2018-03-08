@@ -68,6 +68,8 @@ class Backend():
         ret, thresh = cv2.threshold(sl, 40, 255, cv2.THRESH_TOZERO)
         # remove if over 230
         ret, thresh = cv2.threshold(thresh, 230, 255, cv2.THRESH_TOZERO_INV)
+        # format mask so every pixel is wither 0 or 255
+        ret, thresh = cv2.threshold(thresh, 10, 255, cv2.THRESH_BINARY)
 
         # closing
         shape = (3, 3)
@@ -283,14 +285,39 @@ class Backend():
 
 * Return:
   (tuple): (message, img)
+        
+* Message format:
+[
+  {
+   "component": [head((xmin, ymin),(xmax, ymax)), body((xmin, ymin),(xmax, ymax)), leg((xmin, ymin),(xmax, ymax))],
+   "color": (R, G, B),
+   "position": (X, Y)
+  },
+
+  {another person},
+
+  ...
+]
 """
         binary_mask = self.bg_mask
 
-        # draw boxes around image
+        # blur background
+        foreground = cv2.bitwise_or(self.img, self.img, mask=self.bg_mask)
+        blured_bg = cv2.blur(self.img, (10, 10))
+        for y in range(blured_bg.shape[0]):
+            for x in range(blured_bg.shape[1]):
+                pixel = foreground[y, x]
+                if pixel.all(0):
+                    blured_bg[y, x] = pixel
+
+        # self.img with blured background
+        image = blured_bg
+
+        # detect human
         body_coordinate_list = self.scan_left_right(binary_mask, (100, 180))
-        copy_img = copy.copy(self.img)
+        # draw boxes around image
         for pt1, pt2 in body_coordinate_list:
-            cv2.rectangle(copy_img, pt1, pt2, (0, 255, 0), 2)
+            cv2.rectangle(image, pt1, pt2, (0, 255, 0), 2)
 
         # separate head, body and leg
         all_component_list = []
@@ -310,7 +337,7 @@ class Backend():
 
             # draw components
             for pt1, pt2 in component_list:
-                cv2.rectangle(copy_img, pt1, pt2, (255, 0, 0), 1)
+                cv2.rectangle(image, pt1, pt2, (255, 0, 0), 1)
 
             all_component_list.append(component_list)
 
@@ -320,7 +347,22 @@ class Backend():
             color_list = self.get_color(component_list, self.img)
             all_color_list.append(color_list)
 
-        return (copy_img, {
-            "component": all_component_list,
-            "color": all_color_list
-        })
+        # get position
+        all_position_list = []
+        for component_list in all_component_list:
+            ((leg_xin, leg_ymin), (leg_xmax, leg_ymax)) = component_list[2]
+            position_x = (leg_xin + leg_xmax) / 2
+            position_y = leg_ymax
+            all_position_list.append((position_x, position_y))
+
+        return_list = []
+        for person in zip(body_coordinate_list, all_component_list,
+                          all_color_list, all_position_list):
+            return_list.append({
+                "coordinate": person[0],
+                "component": person[1],
+                "color": person[2],
+                "position": person[3]
+            })
+
+        return (image, return_list)
