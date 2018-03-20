@@ -301,17 +301,20 @@ class Backend():
 """
         binary_mask = self.bg_mask
 
-        # blur background
+        # dim background
         foreground = cv2.bitwise_or(self.img, self.img, mask=self.bg_mask)
-        blured_bg = cv2.blur(self.img, (10, 10))
-        for y in range(blured_bg.shape[0]):
-            for x in range(blured_bg.shape[1]):
+        dimmed_bg = copy.copy(self.img)
+        # stick foreground onto dimmed background
+        for y in range(dimmed_bg.shape[0]):
+            for x in range(dimmed_bg.shape[1]):
                 pixel = foreground[y, x]
                 if pixel.all(0):
-                    blured_bg[y, x] = pixel
+                    dimmed_bg[y, x] = pixel
+                else:
+                    dimmed_bg[y, x] = np.int_(np.divide(dimmed_bg[y, x], 2))
 
         # self.img with blured background
-        image = blured_bg
+        image = dimmed_bg
 
         # detect human
         body_coordinate_list = self.scan_left_right(binary_mask, (100, 180))
