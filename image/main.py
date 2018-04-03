@@ -495,6 +495,12 @@ def detect_human(after_sub):
     return copy_img
 
 
+def simple_sub(image, bg):
+    front = image - bg
+    plt.imshow(front)
+    plt.show()
+
+
 if __name__ == "__main__":
 
     IMG_PATH = 'image4.png'
@@ -504,6 +510,8 @@ if __name__ == "__main__":
     # detect_human((sub_lab(img, bg)))
     # sub_lab(img, bg, True)
 
-    for num in range(1, 5):
-        img = cv2.imread("image%d.png" % num, 1)
-        sub_lab(img, bg, "after_sub_%d.png" % num)
+    # for num in range(1, 5):
+    #     img = cv2.imread("image%d.png" % num, 1)
+    #     sub_lab(img, bg, "after_sub_%d.png" % num)
+
+    simple_sub(img, bg)
