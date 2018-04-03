@@ -347,8 +347,19 @@ class Backend():
         # get color
         all_color_list = []
         for component in all_component_list:
-            color_list = self.get_color(component_list, self.img)
+            color_list = self.get_color(component, self.img)
             all_color_list.append(color_list)
+
+        # draw color
+        x = 20
+        count = 0
+        for color in all_color_list:
+            # -1 means fill
+            body_color = color[1]
+            body_color = list(map(int, body_color))
+            cv2.rectangle(image, (x * count, 0), (x * (count + 1), x),
+                          body_color, -1)
+            count += 1
 
         # get position
         all_position_list = []
